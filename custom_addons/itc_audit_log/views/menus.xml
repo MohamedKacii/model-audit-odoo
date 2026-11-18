@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_audit_root" name="Model auditer" sequence="90"
+              groups="group_audit_user"/>
+
+    <menuitem id="menu_audit_dashboard" name="Tableau de bord"
+              parent="menu_audit_root" action="action_audit_dashboard" sequence="0"
+              groups="group_audit_admin"/>
+
+    <menuitem id="menu_audit_log" name="Journal des opérations"
+              parent="menu_audit_root" action="action_audit_log" sequence="1"
+              groups="group_audit_user"/>
+
+
+    <menuitem id="menu_audit_snapshot" name="Instances"
+              parent="menu_audit_root" action="action_audit_snapshot" sequence="2"
+              groups="group_audit_admin"/>
+
+    <menuitem id="menu_audit_purge" name="Historique des purges"
+              parent="menu_audit_root" action="action_audit_purge" sequence="3"
+              groups="group_audit_admin"/>
+
+    <menuitem id="menu_audit_config" name="Configuration"
+              parent="menu_audit_root" action="action_audit_model_config" sequence="4"
+              groups="group_audit_admin"/>
+</odoo>

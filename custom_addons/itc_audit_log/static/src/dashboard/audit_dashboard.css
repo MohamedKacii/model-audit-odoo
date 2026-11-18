@@ -1,0 +1,7 @@
+.o_audit_dashboard .o_audit_chart {
+    position: relative;
+}
+
+.o_audit_dashboard .o_audit_chart_days {
+    height: 340px;
+}

@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_audit_model_config_user,audit.model.config user,model_audit_model_config,group_audit_user,1,0,0,0
+access_audit_model_config_admin,audit.model.config admin,model_audit_model_config,group_audit_admin,1,1,1,1
+access_audit_log_user,audit.log user,model_audit_log,group_audit_user,1,0,0,0
+access_audit_log_line_user,audit.log.line user,model_audit_log_line,group_audit_user,1,0,0,0
+access_audit_purge_admin,audit.purge admin,model_audit_purge,group_audit_admin,1,0,0,0
+access_audit_snapshot_admin,audit.snapshot admin,model_audit_snapshot,group_audit_admin,1,1,1,1
+access_audit_snapshot_entity_admin,audit.snapshot.entity admin,model_audit_snapshot_entity,group_audit_admin,1,1,1,1
+access_audit_snapshot_field_admin,audit.snapshot.field admin,model_audit_snapshot_field,group_audit_admin,1,1,1,1
+access_audit_purge_wizard_admin,audit.purge.wizard admin,model_audit_purge_wizard,group_audit_admin,1,1,1,1
+access_audit_snapshot_diff_admin,audit.snapshot.diff admin,model_audit_snapshot_diff,group_audit_admin,1,1,1,1

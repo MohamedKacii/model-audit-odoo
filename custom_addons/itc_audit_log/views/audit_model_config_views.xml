@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="audit_model_config_view_list" model="ir.ui.view">
+        <field name="name">audit.model.config.list</field>
+        <field name="model">audit.model.config</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="model_id"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'running'"
+                       decoration-warning="state == 'suspended'"
+                       decoration-danger="state == 'cancelled'"/>
+                <field name="status" widget="badge"
+                       decoration-info="status == 'pending'"
+                       decoration-success="status == 'running'"
+                       decoration-muted="status == 'done'"/>
+                <field name="audit_all_users" widget="boolean_toggle"/>
+                <field name="date_start" optional="show"/>
+                <field name="date_end" optional="show"/>
+                <field name="log_create" widget="boolean_toggle"/>
+                <field name="log_write" widget="boolean_toggle"/>
+                <field name="log_unlink" widget="boolean_toggle"/>
+                <field name="log_archive" widget="boolean_toggle"/>
+                <field name="track_all_fields" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="audit_model_config_view_form" model="ir.ui.view">
+        <field name="name">audit.model.config.form</field>
+        <field name="model">audit.model.config</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_start" type="object" string="Démarrer" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_resume" type="object" string="Reprendre" class="btn-primary"
+                            invisible="state != 'suspended'"/>
+                    <button name="action_suspend" type="object" string="Suspendre"
+                            invisible="state != 'running'"/>
+                    <button name="action_cancel" type="object" string="Annuler"
+                            invisible="state == 'cancelled'"
+                            confirm="Annuler cette configuration ? Elle ne journalisera plus rien."/>
+                    <button name="action_draft" type="object" string="Remettre en brouillon"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar" options="{'clickable': '1'}"
+                           statusbar_visible="draft,running,suspended,cancelled"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archivé" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="model_id"/>
+                        <h1>
+                            <field name="model_id" options="{'no_create': True}"
+                                   placeholder="Choisir le modèle à surveiller"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Période d'audit">
+                            <field name="status" widget="badge"
+                                   decoration-info="status == 'pending'"
+                                   decoration-success="status == 'running'"
+                                   decoration-muted="status == 'done'"/>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                        </group>
+                        <group string="Utilisateurs audités">
+                            <field name="audit_all_users" widget="boolean_toggle"/>
+                            <field name="excluded_user_ids" widget="many2many_tags"
+                                   invisible="not audit_all_users"
+                                   context="{'active_test': False}"
+                                   options="{'no_create': True}"
+                                   placeholder="Personne : tout le monde est audité"/>
+                            <field name="included_user_ids" widget="many2many_tags"
+                                   invisible="audit_all_users" required="not audit_all_users"
+                                   context="{'active_test': False}"
+                                   options="{'no_create': True}"
+                                   placeholder="Choisir les utilisateurs..."/>
+                        </group>
+
+                    </group>
+                    <group>
+                        <group string="Opérations à journaliser">
+                            <field name="log_create" widget="boolean_toggle"/>
+                            <field name="log_write" widget="boolean_toggle"/>
+                            <field name="log_unlink" widget="boolean_toggle"/>
+                            <field name="log_archive" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Champs suivis">
+                            <field name="track_all_fields" widget="boolean_toggle"/>
+                            <field name="field_ids" widget="many2many_tags" invisible="track_all_fields"
+                                   options="{'no_create': True}" placeholder="Choisir les champs..."/>
+                        </group>
+                    </group>
+
+                    <div class="text-muted">
+                        Les mots de passe ne sont jamais enregistrés dans le journal.
+                        Sans date, l'audit est permanent. Pour le mettre en pause, archivez cette configuration.
+                    </div>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="audit_model_config_view_search" model="ir.ui.view">
+        <field name="name">audit.model.config.search</field>
+        <field name="model">audit.model.config</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="model_id"/>
+                <filter name="state_draft" string="Brouillon" domain="[('state', '=', 'draft')]"/>
+                <filter name="state_running" string="En cours" domain="[('state', '=', 'running')]"/>
+                <filter name="state_suspended" string="Suspendu" domain="[('state', '=', 'suspended')]"/>
+                <filter name="state_cancelled" string="Annulé" domain="[('state', '=', 'cancelled')]"/>
+                <separator/>
+                <filter name="inactive" string="Archivés" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter name="group_state" string="État" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_audit_model_config" model="ir.actions.act_window">
+        <field name="name">Configuration</field>
+        <field name="res_model">audit.model.config</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucun modèle surveillé</p>
+            <p>Ajoutez un modèle pour commencer à journaliser ses opérations.</p>
+        </field>
+    </record>
+</odoo>

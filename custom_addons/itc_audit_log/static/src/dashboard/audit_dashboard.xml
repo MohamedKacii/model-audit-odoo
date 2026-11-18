@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="itc_audit_log.Dashboard">
+        <div class="o_audit_dashboard overflow-auto p-4 bg-view h-100">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+                <h2 class="me-auto mb-0">Tableau de bord</h2>
+                <select class="form-select w-auto o_audit_period" t-on-change="onPeriodChange">
+                    <option value="7" t-att-selected="state.period === '7'">7 derniers jours</option>
+                    <option value="30" t-att-selected="state.period === '30'">30 derniers jours</option>
+                    <option value="90" t-att-selected="state.period === '90'">90 derniers jours</option>
+                    <option value="all" t-att-selected="state.period === 'all'">Tout</option>
+                </select>
+                <button class="btn btn-secondary o_audit_open_journal" t-on-click="openJournal">Voir le journal</button>
+                <button class="btn btn-secondary o_audit_open_config" t-on-click="openConfiguration">Configuration</button>
+                <button class="btn btn-danger o_audit_open_purge" t-on-click="openPurge">Purger les logs</button>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="card h-100 o_audit_kpi o_audit_kpi_rules">
+                        <div class="card-body p-4">
+                            <div class="text-muted">Configurations</div>
+                            <div class="fs-1 fw-bold" t-out="state.data.rules_count"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="card h-100 o_audit_kpi o_audit_kpi_entries">
+                        <div class="card-body p-4">
+                            <div class="text-muted">Opérations</div>
+                            <div class="fs-1 fw-bold" t-out="state.data.entries_count"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="card h-100 o_audit_kpi o_audit_kpi_size">
+                        <div class="card-body p-4">
+                            <div class="text-muted">Taille du journal</div>
+                            <div class="fs-1 fw-bold" t-out="state.data.size_label"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="card h-100 o_audit_kpi o_audit_kpi_users">
+                        <div class="card-body p-4">
+                            <div class="text-muted mb-2">Top des utilisateurs audités</div>
+                            <div t-if="!state.data.top_users.length" class="text-muted">Aucune entrée</div>
+                            <ol class="mb-0 ps-3">
+                                <li t-foreach="state.data.top_users" t-as="user" t-key="user_index" class="mb-1">
+                                    <span t-out="user.name"/>
+                                    <span class="badge text-bg-secondary ms-1" t-out="user.count"/>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">
+                        <t t-if="state.data.per_day.unit === 'day'">Opérations par jour</t>
+                        <t t-else="">Opérations par mois</t>
+                    </h5>
+                    <div class="o_audit_chart o_audit_chart_days"><canvas t-ref="dayCanvas"/></div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Opérations par modèle</h5>
+                    <div class="o_audit_chart" t-attf-style="height: #{entityChartHeight}px"><canvas t-ref="entityCanvas"/></div>
+                </div>
+            </div>
+
+            <div class="card o_audit_compare">
+                <div class="card-body p-4">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                        <h5 class="me-auto mb-0">Comparer la structure à une instance</h5>
+                        <button class="btn btn-link" t-on-click="openSnapshots">Gérer les instances</button>
+                    </div>
+                    <div t-if="!state.data.snapshots.length" class="text-muted">
+                        Aucune instance. Créez-en une depuis le menu Instances pour pouvoir comparer.
+                    </div>
+                    <div t-else="" class="d-flex flex-wrap align-items-center gap-2">
+                        <select class="form-select w-auto o_audit_snapshot_select" t-model.number="state.snapshotId">
+                            <option t-foreach="state.data.snapshots" t-as="snapshot" t-key="snapshot.id"
+                                    t-att-value="snapshot.id" t-out="snapshot.name + ' (' + snapshot.date + ')'"/>
+                        </select>
+                        <button class="btn btn-primary o_audit_compare_button" t-on-click="compare">Comparer</button>
+                        <button t-if="state.diff" class="btn btn-secondary" t-on-click="openComparisonList">
+                            Ouvrir en liste (export Excel)
+                        </button>
+                    </div>
+                    <div t-if="state.diff" class="o_audit_diff mt-4">
+                        <div t-if="!state.diff.rows.length" class="alert alert-success mb-0">
+                            Aucune différence avec « <t t-out="state.diff.name"/> ».
+                        </div>
+                        <div t-else="" class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Modèle</th>
+                                        <th>Différence</th>
+                                        <th>Champ</th>
+                                        <th>Propriété</th>
+                                        <th>Avant</th>
+                                        <th>Maintenant</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="state.diff.rows" t-as="row" t-key="row_index">
+                                        <td t-out="row.model_label"/>
+                                        <td t-out="row.kind_label"/>
+                                        <td t-out="row.field_name"/>
+                                        <td t-out="row.attribute"/>
+                                        <td t-out="row.old_value"/>
+                                        <td t-out="row.new_value"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

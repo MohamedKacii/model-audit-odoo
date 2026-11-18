@@ -1,0 +1,21 @@
+# Odoo source, virtualenv, runtime data: never commit
+odoo/
+venv/
+data/
+
+# local config and logs (may hold passwords)
+odoo.conf
+*.log
+test-result.txt
+
+# IDE
+.idea/
+.vscode/
+
+# python
+__pycache__/
+*.pyc
+
+# third-party addon (licensed, contains a firebase admin key)
+custom_addons/spiffy_theme_backend/
+custom_addons/first_module/

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="audit_log_view_list" model="ir.ui.view">
+        <field name="name">audit.log.list</field>
+        <field name="model">audit.log</field>
+        <field name="arch" type="xml">
+            <tree create="0" edit="0" delete="0">
+                <field name="date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="model_label"/>
+                <field name="record_name"/>
+                <field name="operation" widget="badge"
+                       decoration-success="operation == 'create'"
+                       decoration-info="operation == 'write'"
+                       decoration-danger="operation == 'unlink'"
+                       decoration-warning="operation in ('archive', 'unarchive')"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="audit_log_view_form" model="ir.ui.view">
+        <field name="name">audit.log.form</field>
+        <field name="model">audit.log</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="record_name" placeholder="Enregistrement"/></h1>
+                        <h3>
+                            <field name="operation" widget="badge"
+                                   decoration-success="operation == 'create'"
+                                   decoration-info="operation == 'write'"
+                                   decoration-danger="operation == 'unlink'"
+                                   decoration-warning="operation in ('archive', 'unarchive')"/>
+                        </h3>
+                    </div>
+                    <group>
+                        <group string="Qui et quand">
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="date"/>
+                        </group>
+                        <group string="Enregistrement concerné">
+                            <field name="model_label"/>
+                            <field name="model_name"/>
+                            <field name="res_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Détail des changements" name="lines">
+                            <field name="line_ids">
+                                <tree>
+                                    <field name="field_label"/>
+                                    <field name="field_name" optional="hide"/>
+                                    <field name="old_value"/>
+                                    <field name="new_value"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="audit_log_view_search" model="ir.ui.view">
+        <field name="name">audit.log.search</field>
+        <field name="model">audit.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="user_id"/>
+                <field name="model_label"/>
+                <field name="model_name"/>
+                <field name="record_name"/>
+                <field name="res_id"/>
+                <filter name="op_create" string="Créations" domain="[('operation', '=', 'create')]"/>
+                <filter name="op_write" string="Modifications" domain="[('operation', '=', 'write')]"/>
+                <filter name="op_unlink" string="Suppressions" domain="[('operation', '=', 'unlink')]"/>
+                <filter name="op_archive" string="Archivages" domain="[('operation', 'in', ('archive', 'unarchive'))]"/>
+                <separator/>
+                <filter name="filter_date" string="Date" date="date"/>
+                <group expand="0" string="Regrouper par">
+                    <filter name="group_user" string="Utilisateur" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_model" string="Modèle" context="{'group_by': 'model_label'}"/>
+                    <filter name="group_operation" string="Opération" context="{'group_by': 'operation'}"/>
+                    <filter name="group_date" string="Jour" context="{'group_by': 'date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="audit_log_view_graph" model="ir.ui.view">
+        <field name="name">audit.log.graph</field>
+        <field name="model">audit.log</field>
+        <field name="arch" type="xml">
+            <graph string="Opérations par jour" type="bar" stacked="1">
+                <field name="date" interval="day"/>
+                <field name="operation"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="audit_log_view_pivot" model="ir.ui.view">
+        <field name="name">audit.log.pivot</field>
+        <field name="model">audit.log</field>
+        <field name="arch" type="xml">
+            <pivot string="Opérations">
+                <field name="user_id" type="row"/>
+                <field name="operation" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_audit_log" model="ir.actions.act_window">
+        <field name="name">Journal des opérations</field>
+        <field name="res_model">audit.log</field>
+        <field name="view_mode">tree,form,graph,pivot</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucune opération enregistrée</p>
+            <p>Les opérations apparaissent ici dès qu'un modèle surveillé est modifié.</p>
+        </field>
+    </record>
+</odoo>
